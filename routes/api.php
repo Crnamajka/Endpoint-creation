@@ -38,11 +38,8 @@ Route::prefix('v1')->group( function () {
     });
  
     Route::middleware('auth:sanctum')->prefix('products')->group(function () {
-        // Crear una orden basada en los productos del carrito del usuario autenticado
         Route::post('/order', [OrderController::class, 'createOrder']);
-        // Listar todas las órdenes del usuario autenticado
         Route::get('/orders', [OrderController::class, 'listOrders']);
-        // Obtener los detalles de una orden específica
         Route::get('/orders/{id}', [OrderController::class, 'orderDetails']);
     });
 

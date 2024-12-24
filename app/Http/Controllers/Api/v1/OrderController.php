@@ -14,13 +14,13 @@ use Exception;
 
 class OrderController extends Controller
 {
-    // Crear una orden basada en los productos en el carrito del usuario autenticado
+    
     public function createOrder(Request $request)
     {
         try {
             $user = Auth::user();
         
-            // Obtener el carrito abierto del usuario
+            
             $shoppingCart = ShoppingCart::where('UserID', $user->UserID)
                                         ->where('Status', 'open')
                                         ->with('cartItems.productVariant') 
@@ -36,19 +36,19 @@ class OrderController extends Controller
                 return response()->json(['message' => 'Cart is empty'], 400);
             }
         
-            // Crear la orden
+            
             $order = Order::create([
                 'UserID' => $user->UserID,
                 'OrderDate' => now(),
-                'TotalAmount' => $cartItems->sum('UnitPrice'),  // Asegúrate de que 'UnitPrice' esté correctamente definido
+                'TotalAmount' => $cartItems->sum('UnitPrice'),  
                 'OrderStatus' => 'Pending',
                 'PaymentMethod' => $request->payment_method,
                 'ShippingAddress' => $request->shipping_address,
             ]);
         
-            // Crear los ítems de la orden
+          
             foreach ($cartItems as $cartItem) {
-                $productVariant = $cartItem->productVariant;  // Relación cargada con 'cartItems.productVariant'
+                $productVariant = $cartItem->productVariant; 
         
                 if ($productVariant) {
                     OrderItem::create([
@@ -73,24 +73,23 @@ class OrderController extends Controller
     }
     
 
-    // Listar todas las órdenes del usuario autenticado
     public function listOrders()
     {
         try {
             $user = Auth::user();
         
-            $orders = Order::with('orderItems.productVariant.product')  // Cargar el producto relacionado a través de la variante
+            $orders = Order::with('orderItems.productVariant.product') 
                             ->where('UserID', $user->UserID)
                             ->get();
         
             return response()->json([
                 'orders' => $orders->map(function ($order) {
                     return [
-                        'order' => $order,  // Detalles de la orden
+                        'order' => $order, 
                         'orderItems' => $order->orderItems->map(function ($item) {
                             return [
-                                'variant' => $item->productVariant,  // Detalles de la variante del producto
-                                'product' => $item->productVariant->product,  // Detalles del producto
+                                'variant' => $item->productVariant, 
+                                'product' => $item->productVariant->product,
                             ];
                         })
                     ];
@@ -105,13 +104,13 @@ class OrderController extends Controller
     }
     
 
-    // Obtener los detalles de una orden específica
+    
     public function orderDetails($id)
     {
         try {
             $user = Auth::user();
         
-            // Cargar los ítems de la orden y los productos asociados
+        
             $order = Order::with('orderItems.productVariant.product')
                             ->where('UserID', $user->UserID)
                             ->where('OrderID', $id)
@@ -122,11 +121,11 @@ class OrderController extends Controller
             }
         
             return response()->json([
-                'order' => $order,  // Detalles de la orden
+                'order' => $order,
                 'orderItems' => $order->orderItems->map(function ($item) {
                     return [
-                        'variant' => $item->productVariant,  // Detalles de la variante
-                        'product' => $item->productVariant->product,  // Detalles del producto
+                        'variant' => $item->productVariant,
+                        'product' => $item->productVariant->product,
                     ];
                 })
             ], 200);

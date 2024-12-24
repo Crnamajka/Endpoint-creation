@@ -12,7 +12,7 @@ use Exception;
 
 class ShoppingCartController extends Controller
 {
-    // Verificar el carrito de compras del usuario autenticado
+
     public function index(Request $request)
     {
         try {
@@ -46,7 +46,7 @@ class ShoppingCartController extends Controller
             ], 200);
 
         } catch (Exception $e) {
-            // Manejo de excepciones generales
+           
             return response()->json([
                 'message' => 'Error retrieving shopping cart',
                 'error' => $e->getMessage()
@@ -54,17 +54,17 @@ class ShoppingCartController extends Controller
         }
     }
 
-    // Agregar un artículo al carrito de compras
+    
     public function addItem(Request $request)
     {
         try {
-            // Validación de datos de entrada
+            
             $request->validate([
                 'VariantID' => 'required|integer',
                 'Quantity' => 'required|integer|min:1'
             ]);
 
-            // Crear el carrito si no existe
+
             $cart = ShoppingCart::firstOrCreate(
                 [
                     'UserID' => $request->user()->UserID,
@@ -73,7 +73,7 @@ class ShoppingCartController extends Controller
                 ['CreatedDate' => now()]
             );
 
-            // Buscar la variante del producto
+           
             $variant = ProductVariant::find($request->VariantID);
             if (!$variant) {
                 return response()->json([
@@ -81,21 +81,21 @@ class ShoppingCartController extends Controller
                 ], 404);
             }
 
-            // Buscar si el artículo ya está en el carrito
+            
             $cartItem = CartItem::where('CartID', $cart->CartID)
                                 ->where('VariantID', $request->VariantID)
                                 ->first();
 
             if ($cartItem) {
-                // Si el artículo ya existe, se actualiza la cantidad
+                
                 $cartItem->Quantity += $request->Quantity;
             } else {
-                // Si el artículo no existe, se crea un nuevo CartItem
+               
                 $cartItem = new CartItem();
                 $cartItem->CartID = $cart->CartID;
                 $cartItem->VariantID = $variant->VariantID;
                 $cartItem->Quantity = $request->Quantity;
-                $cartItem->UnitPrice = 700; // Aquí podrías ajustar el precio según lo que corresponda
+                $cartItem->UnitPrice = 700;
             }
 
             $cartItem->save();
@@ -106,7 +106,7 @@ class ShoppingCartController extends Controller
             ], 201);
 
         } catch (Exception $e) {
-            // Manejo de excepciones generales
+           
             return response()->json([
                 'message' => 'Error adding product to cart',
                 'error' => $e->getMessage()
@@ -114,16 +114,16 @@ class ShoppingCartController extends Controller
         }
     }
 
-    // Actualizar la cantidad de un artículo en el carrito
+    
     public function updateItem(Request $request, $cartItemId)
     {
         try {
-            // Validación de la cantidad
+            
             $request->validate([
                 'Quantity' => 'required|integer|min:1'
             ]);
 
-            // Buscar el CartItem en la base de datos
+            
             $cartItem = CartItem::join('shopping_carts', 'cart_items.CartID', '=', 'shopping_carts.CartID')
                                 ->where('shopping_carts.UserID', $request->user()->UserID)
                                 ->where('cart_items.CartItemID', $cartItemId)
@@ -134,7 +134,7 @@ class ShoppingCartController extends Controller
                 return response()->json(['message' => 'Cart item not found or does not belong to the user'], 404);
             }
 
-            // Actualizar la cantidad
+
             $cartItem->Quantity = $request->Quantity;
             $cartItem->save();
 
@@ -144,7 +144,7 @@ class ShoppingCartController extends Controller
             ], 200);
 
         } catch (Exception $e) {
-            // Manejo de excepciones generales
+            
             return response()->json([
                 'message' => 'Error updating cart item',
                 'error' => $e->getMessage()
@@ -152,11 +152,11 @@ class ShoppingCartController extends Controller
         }
     }
 
-    // Eliminar un artículo del carrito de compras
+    
     public function removeItem(Request $request, $cartItemId)
     {
         try {
-            // Buscar el CartItem en la base de datos
+            
             $cartItem = CartItem::join('shopping_carts', 'cart_items.CartID', '=', 'shopping_carts.CartID')
                                 ->where('shopping_carts.UserID', $request->user()->UserID)
                                 ->where('cart_items.CartItemID', $cartItemId)
@@ -167,7 +167,7 @@ class ShoppingCartController extends Controller
                 return response()->json(['message' => 'The item was not found or does not belong to the user'], 404);
             }
 
-            // Eliminar el artículo del carrito
+           
             $cartItem->delete();
 
             return response()->json([
@@ -175,7 +175,7 @@ class ShoppingCartController extends Controller
             ], 200);
 
         } catch (Exception $e) {
-            // Manejo de excepciones generales
+           
             return response()->json([
                 'message' => 'Error removing item from cart',
                 'error' => $e->getMessage()
